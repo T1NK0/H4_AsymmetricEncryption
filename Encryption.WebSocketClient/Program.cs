@@ -28,9 +28,9 @@ namespace TcpEchoClient
 			{
 				Console.Write("Enter text to send: ");
 				string lineToSend = Console.ReadLine();
-				Console.WriteLine("Sending to server: " + lineToSend);
                 rsaWithCsp.AssignNewKey();
-                //rsaWithCsp.Encrypt();
+                byte[] encryptedText = rsaWithCsp.EncryptData(Encoding.ASCII.GetBytes(lineToSend));
+				Console.WriteLine("Sending to server: " + rsaWithCsp.MyStringBuilder(encryptedText));
 
                 writer.WriteLine(lineToSend);
 				string lineReceived = reader.ReadLine();
