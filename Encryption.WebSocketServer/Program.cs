@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace TcpEchoServer
 {
