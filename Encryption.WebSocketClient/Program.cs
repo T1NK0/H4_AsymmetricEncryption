@@ -1,21 +1,35 @@
-﻿using System.Net.WebSockets;
-using System.Text;
+﻿
+// This code is adapted from a sample found at the URL 
+// "http://blogs.msdn.com/b/jmanning/archive/2004/12/19/325699.aspx"
 
-Console.Title = "Client";
-using (var ws = new ClientWebSocket())
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+
+namespace TcpEchoClient
 {
-    await ws.ConnectAsync(new Uri("ws://localhost:6666/ws"), CancellationToken.None);
-    var buffer = new byte[256];
-    while (ws.State == WebSocketState.Open)
-    {
-        var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
-        if (result.MessageType == WebSocketMessageType.Close)
-        {
-            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
-        }
-        else
-        {
-            Console.WriteLine(Encoding.ASCII.GetString(buffer, 0, result.Count));
-        }
-    }
+	class TcpEchoClient
+	{
+		static void Main(string[] args)
+		{
+			Console.WriteLine("Starting echo client...");
+
+			int port = 1234;
+			TcpClient client = new TcpClient("localhost", port);
+			NetworkStream stream = client.GetStream();
+			StreamReader reader = new StreamReader(stream);
+			StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
+
+			while (true)
+			{
+				Console.Write("Enter text to send: ");
+				string lineToSend = Console.ReadLine();
+				Console.WriteLine("Sending to server: " + lineToSend);
+				writer.WriteLine(lineToSend);
+				string lineReceived = reader.ReadLine();
+				Console.WriteLine("Received from server: " + lineReceived);
+			}
+		}
+	}
 }

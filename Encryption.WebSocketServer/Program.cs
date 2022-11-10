@@ -1,24 +1,40 @@
-﻿Console.Title = "Server";
-var builder = WebApplication.CreateBuilder();
-builder.WebHost.UseUrls("http://localhost:6666");
-var app = builder.Build();
-app.UseWebSockets();
-app.Map("/ws", async context =>
+﻿// This code is adapted from a sample found at the URL 
+// "http://blogs.msdn.com/b/jmanning/archive/2004/12/19/325699.aspx"
+
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.IO;
+using System.Text;
+
+namespace TcpEchoServer
 {
-    if (context.WebSockets.IsWebSocketRequest)
-    {
-        using (var webSocket = await context.WebSockets.AcceptWebSocketAsync())
-        {
-            while (true)
-            {
-                await webSocket.SendAsync(Encoding.ASCII.GetBytes($"Test - {DateTime.Now}"), WebSocketMessageType.Text, true, CancellationToken.None);
-                await Task.Delay(1000);
-            }
-        }
-    }
-    else
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-    }
-});
-await app.RunAsync();
+	public class TcpEchoServer
+	{
+		public static void Main()
+		{
+			Console.WriteLine("Starting echo server...");
+
+			int port = 1234;
+			TcpListener listener = new TcpListener(IPAddress.Loopback, port);
+			listener.Start();
+
+			TcpClient client = listener.AcceptTcpClient();
+			NetworkStream stream = client.GetStream();
+			StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
+			StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+
+			while (true)
+			{
+				string inputLine = "";
+				while (inputLine != null)
+				{
+					inputLine = reader.ReadLine();
+					writer.WriteLine("Echoing string: " + inputLine);
+					Console.WriteLine("Echoing string: " + inputLine);
+				}
+				Console.WriteLine("Server saw disconnect from client.");
+			}
+		}
+	}
+}
