@@ -31,21 +31,27 @@ namespace TcpEchoClient
             byte[] encrypted = rsa.Encrypt(newKeys["public"], "Test");
             string decrypt = rsa.Decrypt(newKeys["private"], encrypted);
 
-            var clientPublicKey = newKeys["public"];
-            writer.WriteLine(clientPublicKey);
+
 
             var workflow = 0;
+            var aesKey = "";
             while (true)
             {
                 switch (workflow)
                 {
                     case 0:
+                        Console.WriteLine("Press key to send public key server");
 
+                        var clientPublicKey = newKeys["public"];
+                        writer.WriteLine(clientPublicKey);
+
+                        workflow = 1;
                         break;
-                    case 1:
+                        case 1:
 
                         break;
                     default:
+                        break;
                 }
 
                 Console.Write("Enter text to send: ");
