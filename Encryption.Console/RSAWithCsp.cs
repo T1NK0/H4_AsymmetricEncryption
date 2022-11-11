@@ -17,7 +17,7 @@ namespace Encryption.Console
             Dictionary<string, string> newKey = new Dictionary<string, string>();
 
             const int PROVIDER_RSA_FULL = 1;
-            const string CONTAINER_NAME = "KeyContainer";
+            string CONTAINER_NAME = Guid.NewGuid().ToString();
             CspParameters cspParams;
             cspParams = new CspParameters(PROVIDER_RSA_FULL);
             cspParams.KeyContainerName = CONTAINER_NAME;
@@ -50,9 +50,7 @@ namespace Encryption.Console
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicPrivateKeyXML);
 
-            return Encoding.UTF8.GetString(encryptedData);
-
-            //return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
+            return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
         }
     }
 }

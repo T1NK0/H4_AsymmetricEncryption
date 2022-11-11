@@ -14,10 +14,7 @@ namespace TcpEchoServer
     {
         public static void Main()
         {
-
-            Encryption.Console.RSAWithCsp rsaWithCsp = new Encryption.Console.RSAWithCsp();
             Console.WriteLine("Starting echo server...");
-
 
             int port = 1234;
             TcpListener listener = new TcpListener(IPAddress.Loopback, port);
@@ -66,11 +63,11 @@ namespace TcpEchoServer
                             workflow = 1;
                             break;
                         case 1:
-                            var encryptedAesKey = rsa.Encrypt(clientPublicKey, aesIv + ";" + aesKey);
-
+                            byte[] encryptedAesKey = rsa.Encrypt(clientPublicKey, aesIv + ";" + aesKey);
                             writer.WriteLine(encryptedAesKey);
 
-                            Console.WriteLine(encryptedAesKey);
+
+                            Console.WriteLine(ASCIIEncoding.ASCII.GetString(encryptedAesKey));
 
                             Console.WriteLine(workflow);
 

@@ -109,18 +109,5 @@ namespace Encryption.Console
             //return the byte array.
             return buff;
         }
-
-        public string MyStringBuilder(byte[] input)
-        {
-            //Use a string builder to assemble the bytes to a string with text format instead of hexadecimal
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in input)
-            {
-                //ToString("x2") is to format hexadecimal to text
-                sb.Append(b.ToString("x2"));
-            }
-
-            return sb.ToString();
-        }
     }
 }
