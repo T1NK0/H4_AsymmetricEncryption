@@ -1,5 +1,4 @@
-﻿
-// This code is adapted from a sample found at the URL 
+﻿// This code is adapted from a sample found at the URL 
 // "http://blogs.msdn.com/b/jmanning/archive/2004/12/19/325699.aspx"
 
 using System;
@@ -35,32 +34,39 @@ namespace TcpEchoClient
 
             var workflow = 0;
             var aesKey = "";
+            string fromServer = "";
+
             while (true)
             {
-                switch (workflow)
+                while (fromServer != null)
                 {
-                    case 0:
-                        Console.WriteLine("Press key to send public key server");
+                    switch (workflow)
+                    {
+                        case 0:
+                            Console.WriteLine("Press key to send public key to server");
 
-                        var clientPublicKey = newKeys["public"];
-                        writer.WriteLine(clientPublicKey);
+                            var clientPublicKey = newKeys["public"];
+                            writer.WriteLine(clientPublicKey);
 
-                        workflow = 1;
-                        break;
+                            workflow = 1;
+                            break;
                         case 1:
+                            Console.WriteLine("Get aesKey from server");
 
-                        break;
-                    default:
-                        break;
+                            fromServer = reader.ReadLine();
+
+                            aesKey = rsa.Decrypt(newKeys["private"], ASCIIEncoding.ASCII.GetBytes(fromServer));
+
+                            Console.WriteLine(aesKey);
+
+                            Console.WriteLine(workflow);
+
+                            workflow = 2;
+                            break;
+                        default:
+                            break;
+                    }
                 }
-
-                Console.Write("Enter text to send: ");
-                string lineToSend = Console.ReadLine();
-                Console.WriteLine("Sending to server: " + lineToSend);
-
-                writer.WriteLine(lineToSend);
-                string lineReceived = reader.ReadLine();
-                Console.WriteLine("Received from server: " + lineReceived);
             }
         }
     }

@@ -68,17 +68,18 @@ namespace TcpEchoServer
                         case 1:
                             var encryptedAesKey = rsa.Encrypt(clientPublicKey, aesIv + ";" + aesKey);
 
-                            
+                            writer.WriteLine(encryptedAesKey);
+
+                            Console.WriteLine(encryptedAesKey);
+
+                            Console.WriteLine(workflow);
 
                             workflow = 2;
                             break;
                         default:
                             break;
                     }
-
-                    inputLine = reader.ReadLine();
                 }
-                Console.WriteLine("Server saw disconnect from client.");
             }
         }
     }

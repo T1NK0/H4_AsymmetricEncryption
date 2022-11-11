@@ -50,7 +50,9 @@ namespace Encryption.Console
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicPrivateKeyXML);
 
-            return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
+            return Encoding.UTF8.GetString(encryptedData);
+
+            //return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
         }
     }
 }
