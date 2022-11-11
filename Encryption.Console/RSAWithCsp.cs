@@ -9,66 +9,48 @@ namespace Encryption.Console
 {
     public class RSAWithCsp
     {
-        const string ContainerName = "MyContainer";
-
-        public void AssignNewKey()
+        RSACryptoServiceProvider rsa = null;
+        string publicPrivateKeyXML;
+        string publicOnlyKeyXML;
+        public Dictionary<string, string> AssignNewKey()
         {
-            CspParameters cspParams = new CspParameters(1);
-            cspParams.KeyContainerName = ContainerName;
+            Dictionary<string, string> newKey = new Dictionary<string, string>();
+
+            const int PROVIDER_RSA_FULL = 1;
+            const string CONTAINER_NAME = "KeyContainer";
+            CspParameters cspParams;
+            cspParams = new CspParameters(PROVIDER_RSA_FULL);
+            cspParams.KeyContainerName = CONTAINER_NAME;
             cspParams.Flags = CspProviderFlags.UseMachineKeyStore;
             cspParams.ProviderName = "Microsoft Strong Cryptographic Provider";
+            rsa = new RSACryptoServiceProvider(cspParams);
 
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(cspParams) { PersistKeyInCsp = true };
+            //Pair of public and private key as XML string.
+            //Do not share this to other party
+            publicPrivateKeyXML = rsa.ToXmlString(true);
+            newKey.Add("private", publicPrivateKeyXML);
+
+            //Private key in xml file, this string should be share to other parties
+            publicOnlyKeyXML = rsa.ToXmlString(false);
+            newKey.Add("public", publicOnlyKeyXML);
+
+            return newKey;
         }
 
-        public void DeleteKeyInCsp()
+        public byte[] Encrypt(string publicKeyXML, string dataToDycript)
         {
-            CspParameters cspParams = new CspParameters { KeyContainerName = ContainerName };
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(cspParams) { PersistKeyInCsp = false };
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.FromXmlString(publicKeyXML);
 
-            rsa.Clear();
+            return rsa.Encrypt(ASCIIEncoding.ASCII.GetBytes(dataToDycript), true);
         }
 
-        public byte[] EncryptData(byte[] dataToEncrypt)
+        public string Decrypt(string publicPrivateKeyXML, byte[] encryptedData)
         {
-            byte[] cipherbytes;
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.FromXmlString(publicPrivateKeyXML);
 
-            CspParameters cspParams = new CspParameters { KeyContainerName = ContainerName };
-
-            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048, cspParams))
-            {
-                cipherbytes = rsa.Encrypt(dataToEncrypt, false);
-            }
-
-            return cipherbytes;
+            return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
         }
-
-        public byte[] DecryptData(byte[] dataToDecrypt)
-        {
-            byte[] plain;
-
-            CspParameters cspParams = new CspParameters { KeyContainerName = ContainerName };
-
-            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048, cspParams))
-            {
-                plain = rsa.Decrypt(dataToDecrypt, false);
-            }
-
-            return plain;
-        }
-
-        public string MyStringBuilder(byte[] input)
-        {
-            //Use a string builder to assemble the bytes to a string with text format instead of hexadecimal
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in input)
-            {
-                //ToString("x2") is to format hexadecimal to text
-                sb.Append(b.ToString("x2"));
-            }
-
-            return sb.ToString();
-        }
-
     }
 }

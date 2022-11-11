@@ -14,6 +14,8 @@ namespace TcpEchoServer
 	{
 		public static void Main()
 		{
+
+			Encryption.Console.RSAWithCsp rsaWithCsp = new Encryption.Console.RSAWithCsp();
 			Console.WriteLine("Starting echo server...");
 
 			int port = 1234;
@@ -25,17 +27,25 @@ namespace TcpEchoServer
 			StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
 			StreamReader reader = new StreamReader(stream, Encoding.ASCII);
 
-			while (true)
-			{
-				string inputLine = "";
-				while (inputLine != null)
-				{
-					inputLine = reader.ReadLine();
-					writer.WriteLine("Echoing string: " + inputLine);
-					Console.WriteLine("Echoing string: " + inputLine);
-				}
-				Console.WriteLine("Server saw disconnect from client.");
-			}
-		}
+
+            var rsa = new Encryption.Console.RSAWithCsp();
+
+            var newKeys = rsa.AssignNewKey();
+
+            Console.WriteLine("Hello i only speak encryption, please send me your public RSA key.");
+            //var clientKey = reader.ReadLine();
+
+            Console.WriteLine("Send me your key and iv for AES");
+
+            while (true)
+            {
+                string inputLine = "";
+                while (inputLine != null)
+                {
+                    inputLine = reader.ReadLine();
+                }
+                Console.WriteLine("Server saw disconnect from client.");
+            }
+        }
 	}
 }
