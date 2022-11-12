@@ -21,36 +21,38 @@ namespace Encryption.Console
             CspParameters cspParams;
             cspParams = new CspParameters(PROVIDER_RSA_FULL);
             cspParams.KeyContainerName = CONTAINER_NAME;
-            cspParams.Flags = CspProviderFlags.UseMachineKeyStore;
+            cspParams.Flags = CspProviderFlags.NoFlags;
             cspParams.ProviderName = "Microsoft Strong Cryptographic Provider";
-            rsa = new RSACryptoServiceProvider(cspParams);
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(4096, cspParams))
+            {
+                //Pair of public and private key as XML string.
+                //Do not share this to other party
+                publicPrivateKeyXML = rsa.ToXmlString(true);
+                newKey.Add("private", publicPrivateKeyXML);
 
-            //Pair of public and private key as XML string.
-            //Do not share this to other party
-            publicPrivateKeyXML = rsa.ToXmlString(true);
-            newKey.Add("private", publicPrivateKeyXML);
-
-            //Private key in xml file, this string should be share to other parties
-            publicOnlyKeyXML = rsa.ToXmlString(false);
-            newKey.Add("public", publicOnlyKeyXML);
-
+                //Private key in xml file, this string should be share to other parties
+                publicOnlyKeyXML = rsa.ToXmlString(false);
+                newKey.Add("public", publicOnlyKeyXML);
+            }
             return newKey;
         }
-
-        public byte[] Encrypt(string publicKeyXML, string dataToDycript)
+        
+        public string Encrypt(string publicKeyXML, string dataToDycript)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicKeyXML);
-
-            return rsa.Encrypt(ASCIIEncoding.ASCII.GetBytes(dataToDycript), true);
+            var temp = rsa.Encrypt(Encoding.UTF8.GetBytes(dataToDycript), false);
+            return Convert.ToBase64String(temp);
         }
 
-        public string Decrypt(string publicPrivateKeyXML, byte[] encryptedData)
+        public string Decrypt(string publicPrivateKeyXML, string encryptedData)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicPrivateKeyXML);
 
-            return ASCIIEncoding.ASCII.GetString(rsa.Decrypt(encryptedData, true));
+            var temp = rsa.Decrypt(Encoding.UTF8.GetBytes(encryptedData), false);
+
+            return Convert.ToBase64String(temp);
         }
     }
 }

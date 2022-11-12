@@ -22,60 +22,61 @@ namespace TcpEchoServer
 
             TcpClient client = listener.AcceptTcpClient();
             NetworkStream stream = client.GetStream();
-            StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
-            StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+            StreamReader reader = new StreamReader(stream);
+            StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
 
 
             var rsa = new Encryption.Console.RSAWithCsp();
-            var newKeys = rsa.AssignNewKey();
 
             var aes = new Encryption.Console.AESEncryption();
-            var aesKey = aes.CreateKeyWithUserInput(32);
-            var aesIv = aes.CreateKeyWithUserInput(16);
+            //var aesKey = aes.CreateKeyWithUserInput(32);
+            var aesKey = "Ole";
+            //var aesIv = aes.CreateKeyWithUserInput(16);
+            var aesIv = "Ulla";
 
             Console.WriteLine("Welcome! I only speak encryption, please send me your key!");
 
-            //string decrypt = rsa.Decrypt(newKeys["private"], encrypted);
-
-            //Console.WriteLine("Hello i only speak encryption, please send me your public RSA key.");
-            ////var clientKey = reader.ReadLine();
-
-            //Console.WriteLine("Send me your key and iv for AES");
-
-            var workflow = 0;
+            var workflow = 1;
             var clientPublicKey = "";
             string fromClient = "";
-
             while (true)
             {
-                string inputLine = "";
-                while (inputLine != null)
+                //fromClient = reader.ReadLine();
+                //writer.WriteLine("Echoing string: " + fromClient);
+                //Console.WriteLine("Echoing string: " + fromClient);
+                fromClient = reader.ReadLine();
+                switch (workflow)
                 {
-                    switch (workflow)
-                    {
-                        case 0:
-                            Console.WriteLine("Key received:");
+                    case 1:
+                        if (fromClient.Contains("<RSAKeyValue>"))
+                        {
+                            clientPublicKey = fromClient;
 
-                            clientPublicKey = reader.ReadLine();
                             Console.WriteLine(clientPublicKey);
+                            writer.WriteLine("Public RSA key received!");
 
+                            //RETURN ENCRYPTED RSA KEYS
                             SymmetricAlgorithm mySymetricAlgorithm = Aes.Create();
-                            workflow = 1;
-                            break;
-                        case 1:
-                            byte[] encryptedAesKey = rsa.Encrypt(clientPublicKey, aesIv + ";" + aesKey);
-                            writer.WriteLine(encryptedAesKey);
+                            string encryptedAesKey = rsa.Encrypt(clientPublicKey, aesIv + ";" + aesKey);
 
+                            writer.WriteLine("server 1" + encryptedAesKey);
 
-                            Console.WriteLine(ASCIIEncoding.ASCII.GetString(encryptedAesKey));
+                            workflow = 3;
+                        }
+                        break;
+                    case 3:
+                        if (fromClient.Contains("Client requesting aesKey"))
+                        {
+                            Console.WriteLine(fromClient);
 
-                            Console.WriteLine(workflow);
+                            Console.WriteLine("Making AES KEY, and sending to client.");
+                            
+                            workflow = 5;
+                        }
 
-                            workflow = 2;
-                            break;
-                        default:
-                            break;
-                    }
+                        break;
+                    default:
+                        break;
                 }
             }
         }

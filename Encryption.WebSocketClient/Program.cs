@@ -14,7 +14,6 @@ namespace TcpEchoClient
     {
         static void Main(string[] args)
         {
-            Encryption.Console.RSAWithCsp rsaWithCsp = new Encryption.Console.RSAWithCsp();
             Console.WriteLine("Starting echo client...");
 
             int port = 1234;
@@ -24,48 +23,57 @@ namespace TcpEchoClient
             StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
 
             var rsa = new Encryption.Console.RSAWithCsp();
+            var aes = new Encryption.Console.AESEncryption();
 
             var newKeys = rsa.AssignNewKey();
 
-            byte[] encrypted = rsa.Encrypt(newKeys["public"], "Test");
-            string decrypt = rsa.Decrypt(newKeys["private"], encrypted);
-
-
-
             var workflow = 0;
             var aesKey = "";
+            var ivKey = "";
             string fromServer = "";
+
+            //var encrypted = rsa.Encrypt(newKeys["private"], "This is a test of rsa encryption.");
+            //var decrypted = rsa.Decrypt(newKeys["private"], encrypted);
+
+            //Console.WriteLine("Encrypted: ");
+            //Console.WriteLine(encrypted + "\n");
+
+            //Console.WriteLine("Decrypted: ");
+            //Console.WriteLine(decrypted);
+            //Console.WriteLine("");
+
 
             while (true)
             {
-                while (fromServer != null)
+                switch (workflow)
                 {
-                    switch (workflow)
-                    {
-                        case 0:
-                            Console.WriteLine("Press key to send public key to server");
+                    case 0:
+                        var clientPublicKey = newKeys["public"];
+                        writer.WriteLine(clientPublicKey);
 
-                            var clientPublicKey = newKeys["public"];
-                            writer.WriteLine(clientPublicKey);
+                        fromServer = reader.ReadLine();
 
-                            workflow = 1;
-                            break;
-                        case 1:
-                            Console.WriteLine("Get aesKey from server");
+                        Console.WriteLine(fromServer);
+                        workflow = 2;
+                        break;
+                    case 2:
+                        fromServer = reader.ReadLine();
+                        if (fromServer.Contains("server 1"))
+                        {
+                            fromServer = fromServer.Substring(7);
 
-                            fromServer = reader.ReadLine();
+                            Console.WriteLine("Requesting AESKey");
+                            writer.WriteLine("Client requesting aesKey");
 
-                            aesKey = rsa.Decrypt(newKeys["private"], ASCIIEncoding.ASCII.GetBytes(fromServer));
+                            aesKey = rsa.Decrypt(newKeys["private"], fromServer);
 
-                            Console.WriteLine(aesKey);
+                            writer.WriteLine("Client got key");
 
-                            Console.WriteLine(workflow);
-
-                            workflow = 2;
-                            break;
-                        default:
-                            break;
-                    }
+                            workflow = 4;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
