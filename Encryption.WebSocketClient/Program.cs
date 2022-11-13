@@ -51,6 +51,8 @@ namespace TcpEchoClient
                         var clientPublicKey = newKeys["public"];
                         writer.WriteLine(clientPublicKey);
 
+                        fromServer = reader.ReadLine();
+                        
                         workflow = 2;
                         break;
                     case 2:
@@ -59,12 +61,14 @@ namespace TcpEchoClient
                         {
                             fromServer = fromServer.Substring(5);
 
-                            Console.WriteLine("GettingKey");
+                            Console.WriteLine("Requesting AES Key");
 
                             byte[] convertedKeyToByteArray = Convert.FromBase64String(fromServer);
                             aesKey = rsa.Decrypt(newKeys["private"], (convertedKeyToByteArray));
 
-                            writer.WriteLine("Case3");
+                            Console.WriteLine(aesKey);
+
+                            writer.WriteLine("case3");
 
                             workflow = 4;
                         }
@@ -81,7 +85,12 @@ namespace TcpEchoClient
                             byte[] convertedIvToByteArray = Convert.FromBase64String(fromServer);
                             aesIv = rsa.Decrypt(newKeys["private"], (convertedIvToByteArray));
 
-                            writer.WriteLine("Case5");
+                            Console.WriteLine(aesIv);
+
+                            var textToServer = aes.EncryptStringToBytes("Hello Server, it is i!", Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
+
+                            Console.WriteLine(Convert.ToBase64String(textToServer));
+                            writer.WriteLine("case5" + Convert.ToBase64String(textToServer));
 
                             workflow = 6;
                         }
@@ -92,10 +101,6 @@ namespace TcpEchoClient
                         {
                             fromServer = fromServer.Substring(5);
 
-                            var textToServer = aes.EncryptStringToBytes("Hello Server, it is i!", Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
-
-                            Console.WriteLine(Convert.ToBase64String(textToServer));
-                            writer.WriteLine("Case7" + Convert.ToBase64String(textToServer));
 
                             workflow = 8;
                         }

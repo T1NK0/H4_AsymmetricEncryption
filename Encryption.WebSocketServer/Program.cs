@@ -52,7 +52,9 @@ namespace TcpEchoServer
                             clientPublicKey = fromClient;
 
                             Console.WriteLine(clientPublicKey);
+                            writer.WriteLine("Public RSA key received!");
 
+                            //RETURN ENCRYPTED RSA KEYS
                             byte[] encryptedAesKey = rsa.Encrypt(clientPublicKey, aes.Key);
                             writer.WriteLine("case2" + Convert.ToBase64String(encryptedAesKey));
 
@@ -63,8 +65,6 @@ namespace TcpEchoServer
                         if (fromClient.Contains("case3"))
                         {
                             fromClient = fromClient.Substring(5);
-
-                            Console.WriteLine("Sending AES IV");
 
                             byte[] encryptedAesIv = rsa.Encrypt(clientPublicKey, aes.IV);
                             writer.WriteLine("case4" + Convert.ToBase64String(encryptedAesIv));
