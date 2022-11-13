@@ -93,6 +93,13 @@ namespace TcpEchoServer
                         }
                         break;
                     default:
+
+                        //Decrypts the text from server.
+                        var echoTextDecrypted = aesEncryption.DecryptStringFromBytes(Convert.FromBase64String(fromClient), aes.Key, aes.IV);
+                        Console.WriteLine("Client says: " + echoTextDecrypted);
+
+                        writer.WriteLine(Convert.ToBase64String(aesEncryption.EncryptStringToBytes(echoTextDecrypted, aes.Key, aes.IV)));
+                        //Writes out the server text.
                         break;
                 }
             }

@@ -106,6 +106,16 @@ namespace TcpEchoClient
                         }
                         break;
                     default:
+                        //var encryptedTextToSend = aes.EncryptStringToBytes(Console.ReadLine(), Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
+
+                        writer.WriteLine(Convert.ToBase64String(aes.EncryptStringToBytes(Console.ReadLine(), Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv))));
+
+                        fromServer = reader.ReadLine();
+                        //Decrypts the text from server.
+                        textDecrypted = aes.DecryptStringFromBytes(Convert.FromBase64String(fromServer), Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
+
+                        //Writes out the server text.
+                        Console.WriteLine("Server says: " + textDecrypted);
                         break;
                 }
             }
