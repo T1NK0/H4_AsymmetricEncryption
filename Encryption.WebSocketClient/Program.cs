@@ -22,14 +22,14 @@ namespace TcpEchoClient
             StreamReader reader = new StreamReader(stream);
             StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
 
-            var rsa = new Encryption.Console.RSAWithCsp();
+            var rsa = new Encryption.Console.RSAWithXML();
             var aes = new Encryption.Console.AESEncryption();
 
             var newKeys = rsa.AssignNewKey();
 
             var workflow = 0;
             var aesKey = "";
-            var ivKey = "";
+            var aesIv = "";
             string fromServer = "";
 
             //var encrypted = rsa.Encrypt(newKeys["private"], "This is a test of rsa encryption.");
@@ -51,25 +51,53 @@ namespace TcpEchoClient
                         var clientPublicKey = newKeys["public"];
                         writer.WriteLine(clientPublicKey);
 
-                        fromServer = reader.ReadLine();
-
-                        Console.WriteLine(fromServer);
                         workflow = 2;
                         break;
                     case 2:
                         fromServer = reader.ReadLine();
-                        if (fromServer.Contains("server 1"))
+                        if (fromServer.Contains("case2"))
                         {
-                            fromServer = fromServer.Substring(7);
+                            fromServer = fromServer.Substring(5);
 
-                            Console.WriteLine("Requesting AESKey");
-                            writer.WriteLine("Client requesting aesKey");
+                            Console.WriteLine("GettingKey");
 
-                            aesKey = rsa.Decrypt(newKeys["private"], fromServer);
+                            byte[] convertedKeyToByteArray = Convert.FromBase64String(fromServer);
+                            aesKey = rsa.Decrypt(newKeys["private"], (convertedKeyToByteArray));
 
-                            writer.WriteLine("Client got key");
+                            writer.WriteLine("Case3");
 
                             workflow = 4;
+                        }
+                        break;
+                    case 4:
+                        fromServer = reader.ReadLine();
+                        if (fromServer.Contains("case4"))
+                        {
+                            fromServer = fromServer.Substring(5);
+
+                            Console.WriteLine("Requesting AES IV");
+
+
+                            byte[] convertedIvToByteArray = Convert.FromBase64String(fromServer);
+                            aesIv = rsa.Decrypt(newKeys["private"], (convertedIvToByteArray));
+
+                            writer.WriteLine("Case5");
+
+                            workflow = 6;
+                        }
+                        break;
+                    case 6:
+                        fromServer = reader.ReadLine();
+                        if (fromServer.Contains("case6"))
+                        {
+                            fromServer = fromServer.Substring(5);
+
+                            var textToServer = aes.EncryptStringToBytes("Hello Server, it is i!", Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
+
+                            Console.WriteLine(Convert.ToBase64String(textToServer));
+                            writer.WriteLine("Case7" + Convert.ToBase64String(textToServer));
+
+                            workflow = 8;
                         }
                         break;
                     default:

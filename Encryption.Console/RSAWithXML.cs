@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Encryption.Console
 {
-    public class RSAWithCsp
+    public class RSAWithXML
     {
         RSACryptoServiceProvider rsa = null;
         string publicPrivateKeyXML;
@@ -37,22 +37,20 @@ namespace Encryption.Console
             return newKey;
         }
         
-        public string Encrypt(string publicKeyXML, string dataToDycript)
+        public byte[] Encrypt(string publicKeyXML, byte[] dataToEncrypt)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicKeyXML);
-            var temp = rsa.Encrypt(Encoding.UTF8.GetBytes(dataToDycript), false);
-            return Convert.ToBase64String(temp);
+
+            return rsa.Encrypt(dataToEncrypt, true);
         }
 
-        public string Decrypt(string publicPrivateKeyXML, string encryptedData)
+        public string Decrypt(string publicPrivateKeyXML, byte[] encryptedData)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(publicPrivateKeyXML);
 
-            var temp = rsa.Decrypt(Encoding.UTF8.GetBytes(encryptedData), false);
-
-            return Convert.ToBase64String(temp);
+            return Convert.ToBase64String(rsa.Decrypt(encryptedData, true));
         }
     }
 }
