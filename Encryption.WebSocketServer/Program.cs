@@ -25,13 +25,14 @@ namespace TcpEchoServer
             StreamReader reader = new StreamReader(stream);
             StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
 
+            //Create instance of RSA and AES classes with the logic to encrypt and decrypt etc.
             var rsa = new Encryption.Console.RSAWithXML();
-            var aesClass = new Encryption.Console.AESEncryption();
+            var aesEncryption = new Encryption.Console.AESEncryption();
 
             //RETURN ENCRYPTED RSA KEYS
             Aes aes = Aes.Create();
-            aes.Key = aesClass.CreateKeyWithUserInput(32);
-            aes.IV = aesClass.CreateKeyWithUserInput(16);
+            aes.Key = aesEncryption.CreateKeyWithUserInput(32);
+            aes.IV = aesEncryption.CreateKeyWithUserInput(16);
             aes.KeySize = aes.LegalKeySizes[0].MaxSize;
 
             byte[] symmetricKey;
@@ -48,6 +49,7 @@ namespace TcpEchoServer
                 switch (workflow)
                 {
                     case 1:
+                        //Listens for client response to contain the certain values to call the gui and functions.
                         if (fromClient.Contains("<RSAKeyValue>"))
                         {
                             clientPublicKey = fromClient;
@@ -55,7 +57,7 @@ namespace TcpEchoServer
                             Console.WriteLine(clientPublicKey);
                             writer.WriteLine("Public RSA key received!");
 
-                            //RETURN ENCRYPTED RSA KEYS
+                            //Returns the AES key to the client with the RSA public key.
                             byte[] encryptedAesKey = rsa.Encrypt(clientPublicKey, aes.Key);
                             writer.WriteLine("case2" + Convert.ToBase64String(encryptedAesKey));
 
@@ -67,6 +69,7 @@ namespace TcpEchoServer
                         {
                             fromClient = fromClient.Substring(5);
 
+                            //Returns the AES IV to the client with the RSA public key
                             byte[] encryptedAesIv = rsa.Encrypt(clientPublicKey, aes.IV);
                             writer.WriteLine("case4" + Convert.ToBase64String(encryptedAesIv));
 
@@ -78,11 +81,13 @@ namespace TcpEchoServer
                         {
                             fromClient = fromClient.Substring(5);
 
-                            textDecrypted = aesClass.DecryptStringFromBytes(Convert.FromBase64String(fromClient), aes.Key, aes.IV);
+                            //Decrypts the text received from the client
+                            textDecrypted = aesEncryption.DecryptStringFromBytes(Convert.FromBase64String(fromClient), aes.Key, aes.IV);
 
                             Console.WriteLine("Client says: " + textDecrypted);
 
-                            writer.WriteLine("case6"+ Convert.ToBase64String(aesClass.EncryptStringToBytes("Hello Client, welcome in!", aes.Key, aes.IV)));
+                            //Sends back a response to the client based off of previous message.
+                            writer.WriteLine("case6"+ Convert.ToBase64String(aesEncryption.EncryptStringToBytes("Hello Client, welcome in!", aes.Key, aes.IV)));
 
                             workflow = 7;
                         }

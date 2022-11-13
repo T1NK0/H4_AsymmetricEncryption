@@ -22,6 +22,7 @@ namespace TcpEchoClient
             StreamReader reader = new StreamReader(stream);
             StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
 
+            //Create instance of RSA and AES classes with the logic to encrypt and decrypt etc.
             var rsa = new Encryption.Console.RSAWithXML();
             var aes = new Encryption.Console.AESEncryption();
 
@@ -33,22 +34,12 @@ namespace TcpEchoClient
             var fromServer = "";
             var textDecrypted = "";
 
-            //var encrypted = rsa.Encrypt(newKeys["private"], "This is a test of rsa encryption.");
-            //var decrypted = rsa.Decrypt(newKeys["private"], encrypted);
-
-            //Console.WriteLine("Encrypted: ");
-            //Console.WriteLine(encrypted + "\n");
-
-            //Console.WriteLine("Decrypted: ");
-            //Console.WriteLine(decrypted);
-            //Console.WriteLine("");
-
-
             while (true)
             {
                 switch (workflow)
                 {
                     case 0:
+                        //No if statement on this since the client needs to initiate contact with the server first.
                         var clientPublicKey = newKeys["public"];
                         writer.WriteLine(clientPublicKey);
 
@@ -64,6 +55,7 @@ namespace TcpEchoClient
 
                             Console.WriteLine("Requesting AES Key");
 
+                            //Sets the value for the AES Key on the clients solution,
                             byte[] convertedKeyToByteArray = Convert.FromBase64String(fromServer);
                             aesKey = rsa.Decrypt(newKeys["private"], (convertedKeyToByteArray));
 
@@ -82,15 +74,17 @@ namespace TcpEchoClient
 
                             Console.WriteLine("Requesting AES IV");
 
-
+                            //Sets the AES IV on the clients solution.
                             byte[] convertedIvToByteArray = Convert.FromBase64String(fromServer);
                             aesIv = rsa.Decrypt(newKeys["private"], (convertedIvToByteArray));
 
                             Console.WriteLine(aesIv);
 
+                            //Creates a text to send to the server using the AES encryption method, with the Key and IV, 
                             var textToServer = aes.EncryptStringToBytes("Hello Server, it is i!", Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
 
                             Console.WriteLine(Convert.ToBase64String(textToServer));
+                            //Sends the message to the server.
                             writer.WriteLine("case5" + Convert.ToBase64String(textToServer));
 
                             workflow = 6;
@@ -102,8 +96,10 @@ namespace TcpEchoClient
                         {
                             fromServer = fromServer.Substring(5);
 
+                            //Decrypts the text from server.
                             textDecrypted = aes.DecryptStringFromBytes(Convert.FromBase64String(fromServer), Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
 
+                            //Writes out the server text.
                             Console.WriteLine("Server says: " + textDecrypted);
 
                             workflow = 8;
