@@ -30,7 +30,8 @@ namespace TcpEchoClient
             var workflow = 0;
             var aesKey = "";
             var aesIv = "";
-            string fromServer = "";
+            var fromServer = "";
+            var textDecrypted = "";
 
             //var encrypted = rsa.Encrypt(newKeys["private"], "This is a test of rsa encryption.");
             //var decrypted = rsa.Decrypt(newKeys["private"], encrypted);
@@ -101,6 +102,9 @@ namespace TcpEchoClient
                         {
                             fromServer = fromServer.Substring(5);
 
+                            textDecrypted = aes.DecryptStringFromBytes(Convert.FromBase64String(fromServer), Convert.FromBase64String(aesKey), Convert.FromBase64String(aesIv));
+
+                            Console.WriteLine("Server says: " + textDecrypted);
 
                             workflow = 8;
                         }

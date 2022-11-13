@@ -40,7 +40,8 @@ namespace TcpEchoServer
 
             var workflow = 1;
             var clientPublicKey = "";
-            string fromClient = "";
+            var fromClient = "";
+            var textDecrypted = "";
             while (true)
             {
                 fromClient = reader.ReadLine();
@@ -77,9 +78,11 @@ namespace TcpEchoServer
                         {
                             fromClient = fromClient.Substring(5);
 
-                            var textDecrypted = aesClass.DecryptStringFromBytes(Convert.FromBase64String(fromClient), aes.Key, aes.IV);
+                            textDecrypted = aesClass.DecryptStringFromBytes(Convert.FromBase64String(fromClient), aes.Key, aes.IV);
 
-                            Console.WriteLine(textDecrypted);
+                            Console.WriteLine("Client says: " + textDecrypted);
+
+                            writer.WriteLine("case6"+ Convert.ToBase64String(aesClass.EncryptStringToBytes("Hello Client, welcome in!", aes.Key, aes.IV)));
 
                             workflow = 7;
                         }
